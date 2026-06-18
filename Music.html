@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Music Player</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .player {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 340px;
+            text-align: center;
+        }
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .artist {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .bar {
+            flex: 1;
+            height: 6px;
+            background: #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .fill {
+            height: 100%;
+            width: 0%;
+            background: #3498db;
+            border-radius: 10px;
+        }
+        .controls button {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        .play {
+            background: #3498db;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 30px;
+        }
+        .volume {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .volume input {
+            flex: 1;
+        }
+        .playlist {
+            margin-top: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .song {
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+        }
+        .song:hover {
+            background: #ecf0f1;
+        }
+        .song.active {
+            background: #d6eaf8;
+            font-weight: bold;
+        }
+        .time {
+            font-size: 13px;
+            color: #666;
+            min-width: 35px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="player">
+    <h3 style="margin:0;">🎵 Music Player</h3>
+    
+    <div class="title" id="title">Midnight Glow</div>
+    <div class="artist" id="artist">Luna Echo</div>
+    
+    <div class="progress">
+        <span class="time" id="cur">0:00</span>
+        <div class="bar" id="bar">
+            <div class="fill" id="fill"></div>
+        </div>
+        <span class="time" id="total">3:45</span>
+    </div>
+    
+    <div class="controls">
+        <button onclick="prev()">⏮</button>
+        <button class="play" id="playBtn" onclick="toggle()">▶</button>
+        <button onclick="next()">⏭</button>
+    </div>
+    
+    <div class="volume">
+        <span>🔊</span>
+        <input type="range" id="vol" min="0" max="1" step="0.05" value="0.7">
+    </div>
+    
+    <div class="playlist" id="list"></div>
+</div>
+
+<script>
+    var songs = [
+        { title: 'Midnight Glow', artist: 'Luna Echo', dur: 225 },
+        { title: 'Neon Dreams', artist: 'Arctic Pulse', dur: 210 },
+        { title: 'Velvet Sky', artist: 'Aurora Waves', dur: 195 },
+        { title: 'Echo Chamber', artist: 'Kai Zen', dur: 240 }
+    ];
+    
+    var index = 0;
+    var playing = false;
+    var audio = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+    audio.volume = 0.7;
+    
+    var playBtn = document.getElementById('playBtn');
+    
+    function loadSong(i) {
+        var s = songs[i];
+        document.getElementById('title').textContent = s.title;
+        document.getElementById('artist').textContent = s.artist;
+        var m = Math.floor(s.dur / 60);
+        var sec = s.dur % 60;
+        document.getElementById('total').textContent = m + ':' + (sec < 10 ? '0' : '') + sec;
+        document.getElementById('fill').style.width = '0%';
+        document.getElementById('cur').textContent = '0:00';
+        audio.currentTime = 0;
+        
+        var items = document.querySelectorAll('.song');
+        for (var j = 0; j < items.length; j++) {
+            items[j].classList.remove('active');
+            if (j === i) items[j].classList.add('active');
+        }
+    }
+    
+    function renderList() {
+        var list = document.getElementById('list');
+        list.innerHTML = '';
+        for (var i = 0; i < songs.length; i++) {
+            var div = document.createElement('div');
+            div.className = 'song';
+            if (i === index) div.classList.add('active');
+            div.innerHTML = '<span>' + songs[i].title + '</span><span>' + songs[i].artist + '</span>';
+            div.onclick = (function(idx) {
+                return function() {
+                    index = idx;
+                    loadSong(index);
+                    if (playing) audio.play().catch(function() {});
+                };
+            })(i);
+            list.appendChild(div);
+        }
+    }
+    
+    function toggle() {
+        if (playing) {
+            audio.pause();
+            playBtn.textContent = '▶';
+            playing = false;
+        } else {
+            audio.play().catch(function() {});
+            playBtn.textContent = '⏸';
+            playing = true;
+        }
+    }
+    
+    function next() {
+        index = (index + 1) % songs.length;
+        loadSong(index);
+        if (playing) audio.play().catch(function() {});
+    }
+    
+    function prev() {
+        index = (index - 1 + songs.length) % songs.length;
+        loadSong(index);
+        if (playing) audio.play().catch(function() {});
+    }
+    
+    audio.addEventListener('timeupdate', function() {
+        var pct = (audio.currentTime / songs[index].dur) * 100;
+        document.getElementById('fill').style.width = Math.min(pct, 100) + '%';
+        var m = Math.floor(audio.currentTime / 60);
+        var s = Math.floor(audio.currentTime % 60);
+        document.getElementById('cur').textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    });
+    
+    audio.addEventListener('ended', function() {
+        next();
+    });
+    
+    document.getElementById('vol').addEventListener('input', function() {
+        audio.volume = parseFloat(this.value);
+    });
+    
+    document.getElementById('bar').addEventListener('click', function(e) {
+        var rect = this.getBoundingClientRect();
+        var pct = (e.clientX - rect.left) / rect.width;
+        audio.currentTime = pct * songs[index].dur;
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT') return;
+        if (e.code === 'Space') {
+            e.preventDefault();
+            toggle();
+        }
+    });
+    
+    renderList();
+    loadSong(0);
+    audio.volume = 0.7;
+    document.getElementById('vol').value = '0.7';
+</script>
+</body>
+</html>
