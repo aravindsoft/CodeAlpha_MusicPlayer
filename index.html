@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Music Player · separated</title>
+    <!-- CSS (separated) -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="player">
+        <h3 style="margin:0;">🎵 Music Player</h3>
+        
+        <div class="title" id="title">Midnight Glow</div>
+        <div class="artist" id="artist">Luna Echo</div>
+        
+        <div class="progress">
+            <span class="time" id="cur">0:00</span>
+            <div class="bar" id="bar">
+                <div class="fill" id="fill"></div>
+            </div>
+            <span class="time" id="total">3:45</span>
+        </div>
+        
+        <div class="controls">
+            <button onclick="prev()">⏮</button>
+            <button class="play" id="playBtn" onclick="toggle()">▶</button>
+            <button onclick="next()">⏭</button>
+        </div>
+        
+        <div class="volume">
+            <span>🔊</span>
+            <input type="range" id="vol" min="0" max="1" step="0.05" value="0.7">
+        </div>
+        
+        <div class="playlist" id="list"></div>
+    </div>
+
+    <!-- JavaScript (separated) -->
+    <script src="script.js"></script>
+</body>
+</html>
